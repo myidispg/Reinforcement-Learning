@@ -10,15 +10,16 @@ def canny(image):
 
 def region_of_interest(image):
     height = image.shape[0]
-    triangle = np.array([(200, height), (1100, height), (550, 250)])
+    polygons = np.array([[(200, height), (1100, height), (550, 250)]], dtype=np.int32)
     mask = np.zeros_like(image)
-    cv2.fillPoly(mask, triangle, 255)
+    cv2.fillPoly(mask, polygons, 255)
+    return mask
 
 image = cv2.imread('test_image.jpg')
 lane_image = np.copy(image)
 canny = canny(image)
 # Using matplotlib to display the image helps us to determine points for region of interest.
-cv2.imshow('window', canny)
+cv2.imshow('window', region_of_interest(canny))
 cv2.waitKey(0)
 # plt.imshow(canny)
 # plt.show()
