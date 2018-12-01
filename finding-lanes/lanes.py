@@ -13,14 +13,16 @@ def region_of_interest(image):
     polygons = np.array([[(200, height), (1100, height), (550, 250)]], dtype=np.int32)
     mask = np.zeros_like(image)
     cv2.fillPoly(mask, polygons, 255)
-    return mask
+    masked_image = cv2.bitwise_and(image, mask) # Computing this will only show the region of interest in canny image.
+    return masked_image
 
 image = cv2.imread('test_image.jpg')
 lane_image = np.copy(image)
 canny = canny(image)
-# Using matplotlib to display the image helps us to determine points for region of interest.
-cv2.imshow('window', region_of_interest(canny))
+cropped_image = region_of_interest(canny)
+cv2.imshow('window', cropped_image)
 cv2.waitKey(0)
+# Using matplotlib to display the image helps us to determine points for region of interest.
 # plt.imshow(canny)
 # plt.show()
 
