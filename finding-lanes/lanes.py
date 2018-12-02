@@ -2,6 +2,20 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+def average_slope_intercept(image, lines):
+    left_fit = [] # Cooridnates of the lines on the left
+    right_fit = []
+    for line in lines:
+        x1, y1, x2, y2 = lines.reshape(4)
+        parameters = np.polyfit((x1, x2), (y1, y2), deg=1) # gives slope and y intercept for the coords.
+        slope = parameters[0]
+        intercept = parameters[1]
+        # To determine the lines on the left and right, note that the lines on the left will be slanted
+        # a little to the right. Same is for right lines(Slanted to left). That's how lanes are.
+        # Since y is reversed in a computer's pixel coords, right lines will have positive slope.
+        
+        
+
 def canny(image):
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)  # Step 1 convert image to grayscale
     blur = cv2.GaussianBlur(gray, (5,5), 0) # Step 2 Smoothen the image with a Gaussian Filter.
@@ -27,10 +41,11 @@ def region_of_interest(image):
 
 image = cv2.imread('test_image.jpg')
 lane_image = np.copy(image)
-canny = canny(image)
-cropped_image = region_of_interest(canny)
+canny_image = canny(image)
+cropped_image = region_of_interest(canny_image)
 # Detect lines in the image.
 lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5)
+averaged_lines = average_slope_intercept(lane_image, lines)
 # Display lines from hough transform over a black image
 line_image = display_lines(image, lines)
 # Combine the black image with lines with the original image.
