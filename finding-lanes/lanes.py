@@ -87,4 +87,7 @@ while(cap.isOpened()):
     # Combine the black image with lines with the original image.
     combo_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
     cv2.imshow('window', combo_image)
-    cv2.waitKey(1)
+    if cv2.waitKey(1) == ord('q'):
+        break
+cap.release()
+cv2.destroyAllWindows()
