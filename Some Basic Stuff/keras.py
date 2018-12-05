@@ -4,7 +4,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 import matplotlib.pyplot as plt
-
+git 
 n_pts = 500
 np.random.seed(0)
 Xa = np.array([np.random.normal(13, 2, n_pts),
