@@ -99,6 +99,24 @@ X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], 
 X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], 1)
 X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], X_val.shape[2], 1)
 
+# Data augmentation to get better results.
+from keras.preprocessing.image import ImageDataGenerator
+datagen = ImageDataGenerator(width_shift_range=0.1,
+                   height_shift_range=0.1,
+                   zoom_range=0.2,
+                   shear_range=0.1,
+                   rotation_range=10)
+datagen.fit(X_train)
+batches = datagen.flow(X_train, y_train, batch_size=20)
+X_batch, y_batch = next(batches)
+
+fig, axis = plt.subplots(1, 15, figsize=(20, 5))
+fig.tight_layout()
+
+for i in range(15):
+    axis[i].imshow(X_batch[i].reshape(32, 32))
+    axis[i].axis('off')
+
 y_train = to_categorical(y_train, 43)
 y_test = to_categorical(y_test, 43)
 y_val = to_categorical(y_val, 43)
@@ -113,7 +131,7 @@ def leNet_model_modified():
     model.add(Conv2D(30, (3,3), activation='relu'))
     model.add(Conv2D(30, (3,3), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
-    model.add(Dropout(0.5))
+#    model.add(Dropout(0.5))
     
     model.add(Flatten())
     model.add(Dense(500, activation='relu'))
@@ -126,7 +144,11 @@ def leNet_model_modified():
 model = leNet_model_modified()
 print(model.summary())
 
+# Use this for data without datagen
 history = model.fit(X_train, y_train, epochs=10, validation_data=[X_val, y_val], batch_size=400, verbose=1, shuffle=1)
+# Use this for data with datagen
+history = model.fit_generator(datagen.flow(X_train, y_train, batch_size=50), steps_per_epoch=2000, epochs=10, 
+                                           validation_data=[X_val, y_val], shuffle=1)
 
 # Plot loss
 plt.plot(history.history['loss'])
