@@ -36,7 +36,7 @@ for i in range(cols):
             num_of_samples.append(len(x_selected))
 
 print(num_samples)
-plt.figure(figsize(12, 4))
+plt.figure(figsize=(12, 4))
 plt.bar(range(0, num_classes), num_of_samples)
 plt.title("Distribution of the training dataset")
 plt.xlabel("Class number")
