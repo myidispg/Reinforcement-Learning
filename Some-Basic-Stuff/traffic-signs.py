@@ -104,21 +104,26 @@ y_test = to_categorical(y_test, 43)
 y_val = to_categorical(y_val, 43)
 
 # Time to go to deep learning
-def leNet_model():
+def leNet_model_modified():
     model = Sequential()
-    model.add(Conv2D(30, (5, 5), input_shape=(32, 32, 1), activation='relu'))
+    model.add(Conv2D(60, (5, 5), input_shape=(32, 32, 1), activation='relu'))
+    model.add(Conv2D(60, (5,5), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
-    model.add(Conv2D(15, (3,3), activation='relu'))
+    
+    model.add(Conv2D(30, (3,3), activation='relu'))
+    model.add(Conv2D(30, (3,3), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
+    model.add(Dropout(0.5))
+    
     model.add(Flatten())
     model.add(Dense(500, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(num_classes, activation='softmax'))
-    model.compile(Adam(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(Adam(lr=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
     
     return model
 
-model = leNet_model()
+model = leNet_model_modified()
 print(model.summary())
 
 history = model.fit(X_train, y_train, epochs=10, validation_data=[X_val, y_val], batch_size=400, verbose=1, shuffle=1)
@@ -141,3 +146,29 @@ score = model.evaluate(X_test, y_test, verbose=0)
 
 print('Test Score:' , score[0])
 print('Test Accuracy:' , score[1])
+
+# Test the model with some sample images
+import requests
+from PIL import Image
+url = 'https://previews.123rf.com/images/pejo/pejo0907/pejo090700003/5155701-german-traffic-sign-no-205-give-way.jpg'
+r = requests.get(url, stream=True)
+img = Image.open(r.raw)
+plt.imshow(img, cmap=plt.get_cmap('gray'))
+ 
+ 
+#Preprocess image
+ 
+img = np.asarray(img)
+img = cv2.resize(img, (32, 32))
+img = preprocessing(img)
+plt.imshow(img, cmap = plt.get_cmap('gray'))
+print(img.shape)
+ 
+#Reshape reshape
+ 
+img = img.reshape(1, 32, 32, 1)
+ 
+#Test image
+print("predicted sign: "+ str(model.predict_classes(img)))
+
+
