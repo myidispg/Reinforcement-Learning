@@ -14,7 +14,7 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.layers import Dropout, Flatten
-from keras.layers.convolutional import Conv2D
+from keras.layers.convolutional import Conv2D, MaxPooling2D
 import pickle
 import pandas as pd
 import random
@@ -49,30 +49,23 @@ assert(X_val.shape[1:] == (32, 32, 3)), 'The image dimensions must be 32x32x3'
 
 data = pd.read_csv('german-traffic-signs/signnames.csv')
 
-num_of_samples = []
-
+num_of_samples=[]
+ 
 cols = 5
-num_classes = 10
-
-fig, axs = plt.subplots(nrows=num_classes, ncols = cols, figsize=(5, 5))
+num_classes = 43
+ 
+fig, axs = plt.subplots(nrows=num_classes, ncols=cols, figsize=(5,50))
 fig.tight_layout()
-
+ 
 for i in range(cols):
     for j, row in data.iterrows():
-        x_selected = X_train[y_train == j]
-        axs[j][i].imshow(x_selected[random.randint(0, (len(x_selected) - 1)), :, :], cmap=plt.get_cmap('gray'))
-        axs[j][i].axis('off')
-        if i == 2:
-            axs[j][i].set_title(str(j))
-            num_of_samples.append(len(x_selected))
-            
-print(num_of_samples)
-plt.figure(figsize=(12, 4))
-plt.bar(range(0, num_classes), num_of_samples)
-plt.title("Distribution of the training dataset")
-plt.xlabel("Class number")
-plt.ylabel("Number of images")
-
+      x_selected = X_train[y_train == j]
+      axs[j][i].imshow(x_selected[random.randint(0,(len(x_selected) - 1)), :, :], cmap=plt.get_cmap('gray'))
+      axs[j][i].axis("off")
+      if i == 2:
+        axs[j][i].set_title(str(j) + " - " + row["SignName"])
+        num_of_samples.append(len(x_selected))
+        
 import cv2
 plt.imshow(X_train[1000])
 plt.axis('off')
@@ -82,16 +75,69 @@ print(y_train[1000])
 def grayscale(img):
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-img = grayscale(X_train[1000])
-plt.imshow(img)
-plt.axis('off')
-print(img.shape)
-
 # Function to equalize the intensity values of the images
 def equalize(img):
     return cv2.equalizeHist(img)
 
-img = equalize(img)
+def preprocessing(img):
+    return equalize(grayscale(img))/255
+
+img = preprocessing(X_train[1000])
 plt.imshow(img)
 plt.axis('off')
 print(img.shape)
+
+X_train = np.array(list(map(preprocessing, X_train)))
+X_test = np.array(list(map(preprocessing, X_test)))
+X_val = np.array(list(map(preprocessing, X_val)))
+
+plt.imshow(X_train[random.randint(0, len(X_train) - 1)])
+plt.axis('off')
+print(X_train.shape)
+
+X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], 1)
+X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], 1)
+X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], X_val.shape[2], 1)
+
+y_train = to_categorical(y_train, 43)
+y_test = to_categorical(y_test, 43)
+y_val = to_categorical(y_val, 43)
+
+# Time to go to deep learning
+def leNet_model():
+    model = Sequential()
+    model.add(Conv2D(30, (5, 5), input_shape=(32, 32, 1), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+    model.add(Conv2D(15, (3,3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+    model.add(Flatten())
+    model.add(Dense(500, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(num_classes, activation='softmax'))
+    model.compile(Adam(lr=0.01), loss='categorical_crossentropy', metrics=['accuracy'])
+    
+    return model
+
+model = leNet_model()
+print(model.summary())
+
+history = model.fit(X_train, y_train, epochs=10, validation_data=[X_val, y_val], batch_size=400, verbose=1, shuffle=1)
+
+# Plot loss
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.legend(['training', 'validation'])
+plt.title('loss')
+plt.xlabel('epoch')
+
+# Plot accuracy
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.legend(['training', 'validation'])
+plt.title('acc')
+plt.xlabel('epoch')
+
+score = model.evaluate(X_test, y_test, verbose=0)
+
+print('Test Score:' , score[0])
+print('Test Accuracy:' , score[1])
