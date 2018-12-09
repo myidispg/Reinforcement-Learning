@@ -16,6 +16,7 @@ data = pd.read_csv(os.path.join(datadir, 'driving_log.csv'), names=columns)
 pd.set_option('display.max_colwidth', -1)
 data.head()
 
+# function to get only the image name from the complete image path
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail
