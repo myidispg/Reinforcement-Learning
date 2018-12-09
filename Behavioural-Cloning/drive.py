@@ -1,4 +1,4 @@
-import numpy as mp
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import keras
@@ -23,3 +23,11 @@ def path_leaf(path):
 data['center'] = data['center'].apply(path_leaf)
 data['left'] = data['left'].apply(path_leaf)
 data['right'] = data['right'].apply(path_leaf)
+
+# Histogram to analyze the data
+num_bins = 25
+hist, bins = np.histogram(data['steering'], num_bins)
+
+print(bins)
+
+
