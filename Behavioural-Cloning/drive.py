@@ -9,6 +9,7 @@ import cv2
 import os
 import random
 import ntpath
+from sklearn.utils import shuffle
 
 datadir = 'Data/'
 columns = ['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed']
@@ -18,16 +19,40 @@ data.head()
 
 # function to get only the image name from the complete image path
 def path_leaf(path):
+    # This splits the string by the final slash.
     head, tail = ntpath.split(path)
     return tail
 data['center'] = data['center'].apply(path_leaf)
 data['left'] = data['left'].apply(path_leaf)
 data['right'] = data['right'].apply(path_leaf)
 
-# Histogram to analyze the data
+# Histogram to analyze steering angles. Helps to find the dominant steering angles.
 num_bins = 25
+samples_per_bin = 200
 hist, bins = np.histogram(data['steering'], num_bins)
+center = (bins[:-1] + bins[1:]) * 0.5 
+# ^^ Center the bins because the obtained bins are not centered at 0.
+print(center)
+plt.bar(center, hist, width=0.05)
+plt.plot((np.min(data['steering']), np.max(data['steering'])), (samples_per_bin, samples_per_bin))
 
-print(bins)
+# Balancing the extra data
+print('total data length- ', len(data))
+remove_list = []
+for j in range(num_bins):
+    list_ = []
+    for i in range(len(data['steering'])):
+        if data['steering'][i] >= bins[j] and data['steering'][i] <= bins[j+1]:
+            list_.append(i)
+    list_ = shuffle(list_)
+    list_ = list_[samples_per_bin: ]
+    remove_list.extend(list_)
 
+print('len of data to be removed- ', len(remove_list))
+data.drop(data.index[remove_list], inplace=True)
+print('remaining data length- ', len(data))
+
+hist, _ = np.histogram(data['steering'], num_bins)
+plt.bar(center, hist, width=0.05) # here centered bins are already centered bins from the initial data
+plt.plot((np.min(data['steering']), np.max(data['steering'])), (samples_per_bin, samples_per_bin))
 
