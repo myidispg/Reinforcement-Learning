@@ -11,6 +11,7 @@ import random
 import ntpath
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
+import matplotlib.image as mpimg
 
 datadir = 'Data/'
 columns = ['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed']
@@ -83,4 +84,18 @@ axes[1].set_title("Validation Set")
 
 # Preprocessing the data
 def img_preprocess(img):
-    
+    img = mpimg.imread(img)
+    img = img[60:135, :, :]
+    return img
+
+image = img_paths[100]
+original_img = mpimg.imread(image)
+preprocessed_img = img_preprocess(image)
+
+fig, axis = plt.subplots(2, 1, figsize=(7, 5))
+fig.tight_layout()
+axis[0].imshow(original_img)
+axis[0].set_title('Original image')
+axis[1].imshow(preprocessed_img)
+axis[1].set_title('Preprocessed image')
+
