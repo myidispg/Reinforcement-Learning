@@ -10,6 +10,7 @@ import os
 import random
 import ntpath
 from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
 
 datadir = 'Data/'
 columns = ['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed']
@@ -56,3 +57,30 @@ hist, _ = np.histogram(data['steering'], num_bins)
 plt.bar(center, hist, width=0.05) # here centered bins are already centered bins from the initial data
 plt.plot((np.min(data['steering']), np.max(data['steering'])), (samples_per_bin, samples_per_bin))
 
+# Training data loading
+def load_img_steering(datadir, df):
+    image_path = []
+    steering = []
+    for i in range(len(data)):
+        indexed_data = data.iloc[i]
+        center, left, right = indexed_data[0], indexed_data[1], indexed_data[2]
+        image_path.append(os.path.join(datadir, center.strip()))
+        steering.append(float(indexed_data[3]))
+    image_path = np.asarray(image_path)
+    steering = np.asarray(steering)
+    return image_path, steering
+
+img_paths, steerings = load_img_steering(datadir +'/IMG', data)
+
+# Split into train test sets.
+X_train, X_valid, y_train, y_valid = train_test_split(img_paths, steerings, test_size=0.2, random_state=6)
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+axes[0].hist(y_train, bins=num_bins, width=0.05, color='blue')
+axes[0].set_title("Training Set")
+axes[1].hist(y_valid, bins=num_bins, width=0.05, color='red')
+axes[1].set_title("Validation Set")
+
+# Preprocessing the data
+def img_preprocess(img):
+    
