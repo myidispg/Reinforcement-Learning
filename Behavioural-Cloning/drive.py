@@ -86,6 +86,11 @@ axes[1].set_title("Validation Set")
 def img_preprocess(img):
     img = mpimg.imread(img)
     img = img[60:135, :, :]
+    # COnvert to YUV ColorSpace
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+    img = cv2.GaussianBlur(img, (3,3), 0)
+    img = cv2.resize(img, (200, 66))
+    img = img/255
     return img
 
 image = img_paths[100]
@@ -99,3 +104,42 @@ axis[0].set_title('Original image')
 axis[1].imshow(preprocessed_img)
 axis[1].set_title('Preprocessed image')
 
+X_train = np.array(list(map(img_preprocess, X_train)))
+X_valid = np.array(list(map(img_preprocess, X_valid)))
+
+plt.imshow(X_train[random.randint(0, len(X_train)-1)])
+plt.axis('off')
+print(X_train.shape)
+
+def nvidia_model():
+    model = Sequential()
+    # Our data is already normalized, so the step is skipped
+    # Subsample is stride length
+    model.add(Conv2D(24, (5,5), subsample=(2,2), input_shape=(66, 200, 3), activation='relu'))
+    model.add(Conv2D(36, (5,5), subsample=(2,2), activation='relu'))
+    model.add(Conv2D(48, (5,5), subsample=(2,2), activation='relu'))
+    model.add(Conv2D(64, (3,3), activation='relu'))
+    model.add(Conv2D(64, (3,3), activation='relu'))
+    model.add(Dropout(0.5))
+    
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dense(1))
+    
+    optimizer=Adam(lr=0.001)
+    model.compile(loss='mse', optimizer=optimizer)    
+    
+    return model
+
+model = nvidia_model()
+print(model.summary())
+
+history = model.fit(X_train, y_train, epochs=10, validation_data=(X_valid, y_valid), batch_size=100, verbose=1, shuffle=1)
+
+
+    
+    
