@@ -8,19 +8,17 @@ Created on Thu Dec 13 19:51:24 2018
 from flask import Flask
 import socketio
 import eventlet
+from keras.models import load_model
 
 sio = socketio.Server()
 
 app = Flask(__name__) #'__main__'
 
-@app.route('/home')
-def greeting():
-    return 'Welcome'
 
 @sio.on('connect')
 def connect(sid, environ):
     print('Connected')
-    send_control(0, 1)
+    send_control(0, 0)
 
 def send_control(steering_angle, throttle):
     sio.emit('steer', data={
@@ -30,5 +28,6 @@ def send_control(steering_angle, throttle):
 
 if __name__ == '__main__':
     # apsp.run(port=3000)
+    model = load_model('model.h5')
     app = socketio.Middleware(sio, app)
     eventlet.wsgi.server(eventlet.listen(('', 4567)), app)
