@@ -13,6 +13,9 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import matplotlib.image as mpimg
 
+from imgaug import augmenters as iaa
+
+
 datadir = 'Data/'
 columns = ['center', 'left', 'right', 'steering', 'throttle', 'reverse', 'speed']
 data = pd.read_csv(os.path.join(datadir, 'driving_log.csv'), names=columns)
@@ -81,6 +84,66 @@ axes[0].hist(y_train, bins=num_bins, width=0.05, color='blue')
 axes[0].set_title("Training Set")
 axes[1].hist(y_valid, bins=num_bins, width=0.05, color='red')
 axes[1].set_title("Validation Set")
+
+# Data augmentation
+def zoom(image):
+    zoom = iaa.Affine(scale=(1, 1.3))
+    return zoom.augment_image(image)
+
+image = img_paths[random.randint(0, 1000)]
+original_image = mpimg.imread(image)
+zoomed_image = zoom(original_image)
+fig, axs = plt.subplots(2, 1, figsize=(8, 5))
+fig.tight_layout()
+axs[0].imshow(original_image)
+axs[0].set_title('Original image')
+axs[1].imshow(zoomed_image)
+axs[1].set_title('Zoomed image')
+
+def pan(image):
+    pan = iaa.Affine(translate_percent={'x': (-0.1, 0.1), 'y':(-0.1, 0.1)})
+    return pan.augment_image(image)
+
+image = img_paths[random.randint(0, 1000)]
+original_image = mpimg.imread(image)
+panned_image = pan(original_image)
+fig, axs = plt.subplots(1, 2, figsize=(8, 5))
+fig.tight_layout()
+axs[0].imshow(original_image)
+axs[0].set_title('Original Image')
+axs[1].imshow(panned_image)
+axs[1].set_title('Panned Image')
+
+def img_random_brightness(image):
+    brightness = iaa.Multiply((0.2, 1.2))
+    return brightness.augment_image(image)
+
+image = img_paths[random.randint(0, 1000)]
+original_image = mpimg.imread(image)
+brightness_altered_image = img_random_brightness(original_image)
+fig, axs = plt.subplots(1, 2, figsize=(8, 8))
+fig.tight_layout()
+axs[0].imshow(original_image)
+axs[0].set_title('Original Image')
+axs[1].imshow(brightness_altered_image)
+axs[1].set_title('Brightness altered image ')
+
+def img_random_flip(image, steering_angle):
+    image = cv2.flip(image, 1)
+    steering_angle = -steering_angle
+    return image, steering_angle
+
+random_index = random.randint(0, 1000)
+image = img_paths[random_index]
+steering_angle = steerings[random_index]
+original_image = mpimg.imread(image)
+flipped_image, flipped_steering_angle = img_random_flip(original_image, steering_angle)
+fig, axs = plt.subplots(1, 2, figsize=(7, 4))
+fig.tight_layout()
+axs[0].imshow(original_image)
+axs[0].set_title('Original Image - ' + 'Steering Angle:' + str(steering_angle))
+axs[1].imshow(flipped_image)
+axs[1].set_title('Flipped Image - ' + 'Steering Angle:' + str(flipped_steering_angle))    
 
 # Preprocessing the data
 def img_preprocess(img):
