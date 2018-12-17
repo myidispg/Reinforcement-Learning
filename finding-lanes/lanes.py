@@ -56,38 +56,38 @@ def region_of_interest(image):
     masked_image = cv2.bitwise_and(image, mask) # Computing this will only show the region of interest in canny image.
     return masked_image
 
-# image = cv2.imread('test_image.jpg')
-# lane_image = np.copy(image)
-# canny_image = canny(lane_image)
-# cropped_image = region_of_interest(canny_image)
-# # Detect lines in the image.
-# lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5)
-# averaged_lines = average_slope_intercept(lane_image, lines)
-# # Display lines from hough transform over a black image
-# line_image = display_lines(image, averaged_lines)
-# # Combine the black image with lines with the original image.
-# combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
-# cv2.imshow('window', combo_image)
-# cv2.waitKey(0)
+image = cv2.imread('maxresdefault.jpg')
+lane_image = np.copy(image)
+canny_image = canny(lane_image)
+cropped_image = region_of_interest(canny_image)
+# Detect lines in the image.
+lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5)
+averaged_lines = average_slope_intercept(lane_image, lines)
+# Display lines from hough transform over a black image
+line_image = display_lines(image, averaged_lines)
+# Combine the black image with lines with the original image.
+combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 1)
+cv2.imshow('window', combo_image)
+cv2.waitKey(0)
 # ---Keep this portion commented unless you want to see the coords in the image.
 # Using matplotlib to display the image helps us to determine points for region of interest.
 # plt.imshow(canny)
 # plt.show()
 
-cap = cv2.VideoCapture('test2.mp4')
-while(cap.isOpened()):
-    _, frame = cap.read()
-    canny_image = canny(frame)
-    cropped_image = region_of_interest(canny_image)
-    # Detect lines in the image.
-    lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5)
-    averaged_lines = average_slope_intercept(frame, lines)
-    # Display lines from hough transform over a black image
-    line_image = display_lines(frame, averaged_lines)
-    # Combine the black image with lines with the original image.
-    combo_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
-    cv2.imshow('window', combo_image)
-    if cv2.waitKey(1) == ord('q'):
-        break
-cap.release()
-cv2.destroyAllWindows()
+# cap = cv2.VideoCapture('test2.mp4')
+# while(cap.isOpened()):
+#     _, frame = cap.read()
+#     canny_image = canny(frame)
+#     cropped_image = region_of_interest(canny_image)
+#     # Detect lines in the image.
+#     lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5)
+#     averaged_lines = average_slope_intercept(frame, lines)
+#     # Display lines from hough transform over a black image
+#     line_image = display_lines(frame, averaged_lines)
+#     # Combine the black image with lines with the original image.
+#     combo_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
+#     cv2.imshow('window', combo_image)
+#     if cv2.waitKey(1) == ord('q'):
+#         break
+# cap.release()
+# cv2.destroyAllWindows()

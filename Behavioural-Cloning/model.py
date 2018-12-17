@@ -223,12 +223,20 @@ def batch_generator(image_paths, steering_angles, batch_size, istraining):
 x_train_gen, y_train_gen = next(batch_generator(X_train, y_train, 1, 1))
 x_valid_gen, y_valid_gen = next(batch_generator(X_valid, y_valid, 1, 0))
 
-X_train = np.array(list(map(img_preprocess, X_train)))
-X_valid = np.array(list(map(img_preprocess, X_valid)))
 
-plt.imshow(X_train[random.randint(0, len(X_train)-1)])
-plt.axis('off')
-print(X_train.shape)
+fig, axs = plt.subplots(1, 2, figsize=(8, 5))
+fig.tight_layout()
+axs[0].imshow(x_train_gen[0])
+axs[0].set_title('Training Image')
+axs[1].imshow(x_valid_gen[0])
+axs[1].set_title('Validation Image')
+
+#X_train = np.array(list(map(img_preprocess, X_train)))
+#X_valid = np.array(list(map(img_preprocess, X_valid)))
+#
+#plt.imshow(X_train[random.randint(0, len(X_train)-1)])
+#plt.axis('off')
+#print(X_train.shape)
 
 def nvidia_model():
     model = Sequential()
@@ -239,16 +247,16 @@ def nvidia_model():
     model.add(Conv2D(48, (5,5), subsample=(2,2), activation='elu'))
     model.add(Conv2D(64, (3,3), activation='elu'))
     model.add(Conv2D(64, (3,3), activation='elu'))
-    model.add(Dropout(0.5))
+#    model.add(Dropout(0.5))
     
     model.add(Flatten())
     model.add(Dense(100, activation='elu'))
-    model.add(Dropout(0.5))
+#    model.add(Dropout(0.5))
     
     model.add(Dense(50, activation='elu'))
-    model.add(Dropout(0.5))
+#    model.add(Dropout(0.5))
     model.add(Dense(10, activation='elu'))
-    model.add(Dropout(0.5))
+#    model.add(Dropout(0.5))
     model.add(Dense(1))
     
     optimizer=Adam(lr=0.001)
@@ -259,7 +267,14 @@ def nvidia_model():
 model = nvidia_model()
 print(model.summary())
 
-history = model.fit(X_train, y_train, epochs=30, validation_data=(X_valid, y_valid), batch_size=100, verbose=1, shuffle=1)
+#history = model.fit(X_train, y_train, epochs=30, validation_data=(X_valid, y_valid), batch_size=100, verbose=1, shuffle=1)
+history = model.fit_generator(batch_generator(X_train, y_train, 100, 1),
+                                  steps_per_epoch=300, 
+                                  epochs=10,
+                                  validation_data=batch_generator(X_valid, y_valid, 100, 0),
+                                  validation_steps=200,
+                                  verbose=1,
+                                  shuffle = 1)
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
