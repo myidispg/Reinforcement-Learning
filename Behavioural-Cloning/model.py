@@ -145,9 +145,42 @@ axs[0].set_title('Original Image - ' + 'Steering Angle:' + str(steering_angle))
 axs[1].imshow(flipped_image)
 axs[1].set_title('Flipped Image - ' + 'Steering Angle:' + str(flipped_steering_angle))    
 
+def random_augment(image_path, steering_angle):
+    image = mpimg.imread(image_path)
+    if np.random.rand()< 0.5:
+        image = pan(image)
+    if np.random.rand()< 0.5:
+        image = zoom(image)
+    if np.random.rand()< 0.5:
+        image = img_random_brightness(image)
+    if np.random.rand()< 0.5:
+        image, steering_angle = img_random_flip(image, steering_angle)
+        
+    return image, steering_angle
+        
+ncol = 2
+nrow = 10
+
+fig, axs = plt.subplots(nrow, ncol, figsize=(7, 40))
+fig.tight_layout()
+
+for i in range(10):
+  randnum = random.randint(0, len(img_paths) - 1)
+  random_image = img_paths[randnum]
+  random_steering = steerings[randnum]
+    
+  original_image = mpimg.imread(random_image)
+  augmented_image, steering = random_augment(random_image, random_steering)
+    
+  axs[i][0].imshow(original_image)
+  axs[i][0].set_title("Original Image")
+  
+  axs[i][1].imshow(augmented_image)
+  axs[i][1].set_title("Augmented Image")        
+        
 # Preprocessing the data
 def img_preprocess(img):
-    img = mpimg.imread(img)
+#    img = mpimg.imread(img)
     img = img[60:135, :, :]
     # COnvert to YUV ColorSpace
     img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
@@ -166,6 +199,29 @@ axis[0].imshow(original_img)
 axis[0].set_title('Original image')
 axis[1].imshow(preprocessed_img)
 axis[1].set_title('Preprocessed image')
+
+def batch_generator(image_paths, steering_angles, batch_size, istraining):
+    while True:
+        batch_img = []
+        batch_steering = []
+        
+        for i in range(batch_size):
+            random_index = random.randint(0, len(image_paths) - 1)
+            
+            if istraining:
+                im, steering = random_augment(image_paths[random_index], steering_angles[random_index])
+            else:
+                im = mpimg.imread(image_paths[random_index])
+                steering = steering_angles[random_index]
+            
+            im = img_preprocess(im)
+            batch_img.append(im)
+            batch_steering.append(steering)
+            
+        yield (np.asarray(batch_img), np.asarray(batch_steering))
+        
+x_train_gen, y_train_gen = next(batch_generator(X_train, y_train, 1, 1))
+x_valid_gen, y_valid_gen = next(batch_generator(X_valid, y_valid, 1, 0))
 
 X_train = np.array(list(map(img_preprocess, X_train)))
 X_valid = np.array(list(map(img_preprocess, X_valid)))
